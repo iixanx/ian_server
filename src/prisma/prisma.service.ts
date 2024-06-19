@@ -67,4 +67,67 @@ export class PrismaService
       },
     });
   }
+
+  async createOtp(service: string, account: string, userId: number) {
+    await this.otp.create({
+      data: {
+        service,
+        account,
+        userId,
+      },
+    });
+  }
+
+  async findOtpWithPage(userId: number, page: number) {
+    return await this.otp.findMany({
+      where: {
+        userId,
+      },
+      skip: page * 10,
+      take: 10,
+    });
+  }
+
+  async findOtpByServiceAndAccount(service: string, account: string) {
+    return await this.otp.findUnique({
+      where: {
+        service_account: {
+          service,
+          account,
+        },
+      },
+    });
+  }
+
+  async findOtpById(id: number) {
+    return await this.otp.findUnique({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async deleteOtpById(id: number) {
+    await this.otp.delete({
+      where: {
+        id,
+      },
+    });
+  }
+
+  async updateOtpServiceAndAccount(
+    id: number,
+    service: string,
+    account: string,
+  ) {
+    return await this.otp.update({
+      where: {
+        id,
+      },
+      data: {
+        service,
+        account,
+      },
+    });
+  }
 }

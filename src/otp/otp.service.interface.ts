@@ -1,6 +1,7 @@
 export interface IOtpService {
   addAccount
   deleteAccount
-  getOtpNumber
+  validateOtpNumber
   patchAccountInformation
+  getAccountList
 }

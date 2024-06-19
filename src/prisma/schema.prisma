@@ -12,10 +12,17 @@ model user {
   email    String @unique
   password String
   name     String
+  otp      otp[]
 }
 
 model otp {
   id      Int    @id @default(autoincrement())
+  userId  Int
   service String
   account String
+  user    user   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([service, account])
+  @@index([service, account], map: "otp_service_account_fkey")
+  @@index([userId], map: "otp_userId_fkey")
 }

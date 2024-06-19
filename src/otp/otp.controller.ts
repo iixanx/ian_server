@@ -1,4 +1,83 @@
-import { Controller } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  UseGuards,
+} from '@nestjs/common';
+import { OtpService } from './otp.service';
+import { AddAccountRequestDto } from './dto/addAccount.request.dto';
+import { DeleteAccountRequestDto } from './dto/deleteAccount.request.dto';
+import { PatchAccountInformationDto } from './dto/patchAccountInformation.dto';
+import { ValidateOtpNumberRequestDto } from './dto/validateOtpNumber.request.dto';
+import { AuthGuard } from 'auth/auth.guard';
+import { GetAccountListRequestDto } from './dto/getAccountList.request.dto';
 
 @Controller('otp')
-export class OtpController {}
+@UseGuards(AuthGuard)
+export class OtpController {
+  constructor(private service: OtpService) {
+    this.service = service;
+  }
+
+  @Post()
+  async addAccount(request: AddAccountRequestDto) {
+    const data = await this.service.addAccount(request);
+
+    return {
+      data,
+      statusCode: 201,
+      statusMsg: '',
+    };
+  }
+
+  @Delete()
+  async deleteAccount(@Body() request: DeleteAccountRequestDto) {
+    const data = await this.service.deleteAccount(request);
+
+    return {
+      data,
+      statusCode: 204,
+      statusMsg: '',
+    };
+  }
+
+  @Patch()
+  async patchAccountInformation(@Body() request: PatchAccountInformationDto) {
+    const data = await this.service.patchAccountInformation(request);
+
+    return {
+      data,
+      statusCode: 200,
+      statusMsg: '',
+    };
+  }
+
+  @Get('')
+  async validateOtpNumber(@Body() request: ValidateOtpNumberRequestDto) {
+    const data = await this.service.validateOtpNumber(request);
+
+    return {
+      data,
+      statusCode: 200,
+      statusMsg: '',
+    };
+  }
+
+  @Get('/:page')
+  async getAccountList(
+    @Param('page') page: string,
+    @Body() request: GetAccountListRequestDto,
+  ) {
+    const data = await this.service.getAccountList(page, request);
+
+    return {
+      data,
+      statusCode: 200,
+      statusMsg: '',
+    };
+  }
+}
