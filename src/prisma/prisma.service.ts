@@ -37,14 +37,19 @@ export class PrismaService
     });
   }
 
-  async createUser(data: { name: string; email: string; password: string }) {
-    const { name, email, password } = data;
+  async createUser(data: {
+    name: string;
+    email: string;
+    password: string;
+    secret: string;
+  }) {
+    const { name, email, password, secret } = data;
 
     await this.user.create({
       data: {
         name,
         email,
-        password,
+        password
       },
     });
   }
@@ -68,12 +73,18 @@ export class PrismaService
     });
   }
 
-  async createOtp(service: string, account: string, userId: number) {
+  async createOtp(
+    service: string,
+    account: string,
+    userId: number,
+    secret: string,
+  ) {
     await this.otp.create({
       data: {
         service,
         account,
         userId,
+        secret,
       },
     });
   }

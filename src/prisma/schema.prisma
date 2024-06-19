@@ -20,6 +20,7 @@ model otp {
   userId  Int
   service String
   account String
+  secret  String
   user    user   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([service, account])

@@ -6,6 +6,7 @@ import { ValidateOtpNumberRequestDto } from './dto/validateOtpNumber.request.dto
 import { PatchAccountInformationDto } from './dto/patchAccountInformation.dto';
 import { GetAccountListRequestDto } from './dto/getAccountList.request.dto';
 import { PrismaService } from 'prisma/prisma.service';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class OtpService implements IOtpService {
@@ -14,11 +15,10 @@ export class OtpService implements IOtpService {
   async addAccount(request: AddAccountRequestDto) {
     const { service, account, user } = request;
 
-    await this.prisma.createOtp(service, account, user.id);
-    return await this.prisma.findOtpByServiceAndAccount(
-      service,
-      account,
-    );
+    const secret = authenticator.generateSecret();
+
+    await this.prisma.createOtp(service, account, user.id, secret);
+    return await this.prisma.findOtpByServiceAndAccount(service, account);
   }
 
   async deleteAccount(request: DeleteAccountRequestDto) {
@@ -32,7 +32,15 @@ export class OtpService implements IOtpService {
     return;
   }
 
-  async validateOtpNumber(request: ValidateOtpNumberRequestDto) {}
+  async validateOtpNumber(request: ValidateOtpNumberRequestDto) {
+    const { otpId, otpNumber, user } = request;
+    const thisOtp = await this.prisma.findOtpById(otpId);
+
+    if (!thisOtp) throw new NotFoundException();
+    if (thisOtp.userId !== user.id) throw new NotFoundException();
+
+    return authenticator.check(String(otpNumber), thisOtp.secret);
+  }
 
   async patchAccountInformation(request: PatchAccountInformationDto) {
     const { service, account, user } = request;

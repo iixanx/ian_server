@@ -13,6 +13,7 @@ import { ModifyRequestDto } from './dto/modify.request.dto';
 import { PatchRequestDto } from './dto/patch.request.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { hash } from 'bcrypt';
+import { authenticator } from 'otplib';
 
 @Injectable()
 export class AuthService implements IAuthService {
@@ -26,8 +27,14 @@ export class AuthService implements IAuthService {
     if (await this.prisma.findUserByEmail(email)) throw new ConflictException();
 
     const hashedPassword = await hash(password, 10);
+    const secret = authenticator.generateSecret();
 
-    await this.prisma.createUser({ name, email, password: hashedPassword });
+    await this.prisma.createUser({
+      name,
+      email,
+      password: hashedPassword,
+      secret,
+    });
     const thisUser = await this.prisma.findUserByEmail(email);
     return {
       id: thisUser.id,

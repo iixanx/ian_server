@@ -56,7 +56,7 @@ export class OtpController {
     };
   }
 
-  @Get('')
+  @Get('validate')
   async validateOtpNumber(@Body() request: ValidateOtpNumberRequestDto) {
     const data = await this.service.validateOtpNumber(request);
 
