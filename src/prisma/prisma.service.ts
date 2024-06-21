@@ -37,19 +37,14 @@ export class PrismaService
     });
   }
 
-  async createUser(data: {
-    name: string;
-    email: string;
-    password: string;
-    secret: string;
-  }) {
-    const { name, email, password, secret } = data;
+  async createUser(data: { name: string; email: string; password: string }) {
+    const { name, email, password } = data;
 
     await this.user.create({
       data: {
         name,
         email,
-        password
+        password,
       },
     });
   }

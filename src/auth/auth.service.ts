@@ -3,6 +3,7 @@ import {
   ConflictException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { IAuthService } from './auth.service.interface';
@@ -12,9 +13,7 @@ import { UnsubscribeRequestDto } from './dto/unsubscribe.request.dto';
 import { ModifyRequestDto } from './dto/modify.request.dto';
 import { PatchRequestDto } from './dto/patch.request.dto';
 import { PrismaService } from 'prisma/prisma.service';
-import { hash } from 'bcrypt';
-import { authenticator } from 'otplib';
-
+import { compare, hash } from 'bcrypt';
 @Injectable()
 export class AuthService implements IAuthService {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {
@@ -27,15 +26,16 @@ export class AuthService implements IAuthService {
     if (await this.prisma.findUserByEmail(email)) throw new ConflictException();
 
     const hashedPassword = await hash(password, 10);
-    const secret = authenticator.generateSecret();
 
     await this.prisma.createUser({
       name,
       email,
       password: hashedPassword,
-      secret,
     });
+
     const thisUser = await this.prisma.findUserByEmail(email);
+    if (!thisUser) throw new InternalServerErrorException();
+
     return {
       id: thisUser.id,
       email: thisUser.email,
@@ -48,8 +48,9 @@ export class AuthService implements IAuthService {
     const thisUser = await this.prisma.findUserByEmail(email);
 
     if (!thisUser) throw new NotFoundException();
-    if (thisUser.password !== (await hash(password, 10)))
-      throw new BadRequestException();
+    if (!(await compare(password, thisUser.password))){
+      throw new BadRequestException("Password is not correct");
+    }
 
     return {
       accessToken:

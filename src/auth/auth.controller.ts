@@ -5,6 +5,7 @@ import { SignUpRequestDto } from './dto/signup.request.dto';
 import { UnsubscribeRequestDto } from './dto/unsubscribe.request.dto';
 import { ModifyRequestDto } from './dto/modify.request.dto';
 import { PatchRequestDto } from './dto/patch.request.dto';
+import { AuthGuard } from './auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -38,7 +39,7 @@ export class AuthController {
 
 
   @Delete('signout')
-  @UseGuards()
+  @UseGuards(AuthGuard)
   async unsubscribe(@Body() request: UnsubscribeRequestDto) {
     const data = await this.service.unsubscribe(request);
 
@@ -50,7 +51,6 @@ export class AuthController {
   }
 
   @Patch('modify')
-  @UseGuards()
   async modify(@Body() request: ModifyRequestDto) {
     const data = await this.service.modify(request);
 
@@ -62,7 +62,7 @@ export class AuthController {
   }
 
   @Patch('patch')
-  @UseGuards()
+  @UseGuards(AuthGuard)
   async patch(@Body() request: PatchRequestDto) {
     const data = await this.service.patch(request);
 

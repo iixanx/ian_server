@@ -15,6 +15,7 @@ import { PatchAccountInformationDto } from './dto/patchAccountInformation.dto';
 import { ValidateOtpNumberRequestDto } from './dto/validateOtpNumber.request.dto';
 import { AuthGuard } from 'auth/auth.guard';
 import { GetAccountListRequestDto } from './dto/getAccountList.request.dto';
+import { GetOtpInformRequestDto } from './dto/getOtpInform.request.dto';
 
 @Controller('otp')
 @UseGuards(AuthGuard)
@@ -59,6 +60,20 @@ export class OtpController {
   @Get('validate')
   async validateOtpNumber(@Body() request: ValidateOtpNumberRequestDto) {
     const data = await this.service.validateOtpNumber(request);
+
+    return {
+      data,
+      statusCode: 200,
+      statusMsg: '',
+    };
+  }
+
+  @Get('otp/:id')
+  async getOtpInformation(
+    @Param('id') id: string,
+    @Body() request: GetOtpInformRequestDto,
+  ) {
+    const data = await this.service.getOtpInform(id, request);
 
     return {
       data,

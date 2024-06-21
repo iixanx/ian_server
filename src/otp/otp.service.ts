@@ -1,4 +1,9 @@
-import { Inject, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { IOtpService } from './otp.service.interface';
 import { AddAccountRequestDto } from './dto/addAccount.request.dto';
 import { DeleteAccountRequestDto } from './dto/deleteAccount.request.dto';
@@ -7,6 +12,7 @@ import { PatchAccountInformationDto } from './dto/patchAccountInformation.dto';
 import { GetAccountListRequestDto } from './dto/getAccountList.request.dto';
 import { PrismaService } from 'prisma/prisma.service';
 import { authenticator } from 'otplib';
+import { GetOtpInformRequestDto } from './dto/getOtpInform.request.dto';
 
 @Injectable()
 export class OtpService implements IOtpService {
@@ -64,5 +70,17 @@ export class OtpService implements IOtpService {
     const { user } = request;
 
     return await this.prisma.findOtpWithPage(user.id, numPage);
+  }
+
+  async getOtpInform(otpId: string, request: GetOtpInformRequestDto) {
+    const { user } = request;
+    const id = Number(otpId);
+
+    if (Number.isNaN(id)) throw new BadRequestException();
+
+    const thisOtp = await this.prisma.findOtpById(id);
+    if (thisOtp.userId !== user.id) throw new NotFoundException();
+
+    return thisOtp;
   }
 }
