@@ -4,6 +4,8 @@ import {
   ExecutionContext,
   Inject,
   Injectable,
+  Logger,
+  LoggerService,
   UnauthorizedException,
 } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
@@ -11,24 +13,26 @@ import { PrismaService } from 'prisma/prisma.service';
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    @Inject(PrismaService) private prisma: PrismaService
-  ){}
-  
-  async canActivate(
-    context: ExecutionContext,
-  ): Promise<boolean> {
-    const request = context.switchToHttp().getRequest();
-    const header = request.header;
+    @Inject(PrismaService) private prisma: PrismaService,
+    @Inject(Logger) private logger: LoggerService,
+  ) {}
 
-    const token = Number(header['authorization']);
-    if (Number.isNaN(token) || Math.floor(token / 10000000) < 30000000000)
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    const request = context.switchToHttp().getRequest();
+    const header = request.headers;
+
+    const token = BigInt(header['authorization']);
+
+    const resolved = new Date(
+      Math.floor(Number(token / BigInt(10000000))) - 30000000000,
+    );
+
+    if (token.toString() === 'NaN' || Number(resolved) < 0)
       throw new BadRequestException();
 
-    const resolved_1 = new Date(Math.floor(token / 10000000) - 30000000000);
+    if (resolved < new Date()) throw new UnauthorizedException();
 
-    if (resolved_1 < new Date()) throw new UnauthorizedException();
-
-    request.user = await this.prisma.findUserById(token % 10000000)
+    request.body.user = await this.prisma.findUserById(Number(token % BigInt(10000000)));
 
     return true;
   }

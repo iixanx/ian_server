@@ -4,6 +4,8 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  Logger,
+  LoggerService,
   NotFoundException,
 } from '@nestjs/common';
 import { IAuthService } from './auth.service.interface';
@@ -16,11 +18,15 @@ import { PrismaService } from 'prisma/prisma.service';
 import { compare, hash } from 'bcrypt';
 @Injectable()
 export class AuthService implements IAuthService {
-  constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {
+  constructor(
+    @Inject(PrismaService) private readonly prisma: PrismaService,
+    @Inject(Logger) private logger: LoggerService,
+  ) {
     this.prisma = prisma;
   }
 
   async signup(request: SignUpRequestDto) {
+    this.logger.log("try to signup")
     const { name, email, password } = request;
 
     if (await this.prisma.findUserByEmail(email)) throw new ConflictException();
@@ -43,23 +49,30 @@ export class AuthService implements IAuthService {
   }
 
   async signin(request: SignInRequestDto) {
+    this.logger.log("try to signin")
     const { email, password } = request;
 
     const thisUser = await this.prisma.findUserByEmail(email);
 
     if (!thisUser) throw new NotFoundException();
-    if (!(await compare(password, thisUser.password))){
-      throw new BadRequestException("Password is not correct");
+    if (!(await compare(password, thisUser.password))) {
+      throw new BadRequestException('Password is not correct');
     }
 
     return {
       accessToken:
         String(new Date().valueOf() + 1000 * 60 * 60 * 3 + 30000000000) +
         String(thisUser.id).padStart(8, '0'),
+      user: {
+        id: thisUser.id,
+        email: thisUser.email,
+        name: thisUser.name,
+      },
     };
   }
 
   async unsubscribe(request: UnsubscribeRequestDto) {
+    this.logger.log("try to unsubscribe")
     const { user } = request;
 
     await this.prisma.deleteUser(user.id);
@@ -68,6 +81,7 @@ export class AuthService implements IAuthService {
   }
 
   async modify(request: ModifyRequestDto) {
+    this.logger.log("try to modify")
     const { email, password } = request;
 
     const thisUser = await this.prisma.findUserByEmail(email);

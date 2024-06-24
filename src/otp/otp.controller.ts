@@ -25,7 +25,7 @@ export class OtpController {
   }
 
   @Post()
-  async addAccount(request: AddAccountRequestDto) {
+  async addAccount(@Body() request: AddAccountRequestDto) {
     const data = await this.service.addAccount(request);
 
     return {
