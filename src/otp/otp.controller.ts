@@ -68,7 +68,7 @@ export class OtpController {
     };
   }
 
-  @Get('otp/:id')
+  @Get('/inform/:id')
   async getOtpInformation(
     @Param('id') id: string,
     @Body() request: GetOtpInformRequestDto,
@@ -82,12 +82,9 @@ export class OtpController {
     };
   }
 
-  @Get('/:page')
-  async getAccountList(
-    @Param('page') page: string,
-    @Body() request: GetAccountListRequestDto,
-  ) {
-    const data = await this.service.getAccountList(page, request);
+  @Get('')
+  async getAccountList(@Body() request: GetAccountListRequestDto) {
+    const data = await this.service.getAccountList(request);
 
     return {
       data,

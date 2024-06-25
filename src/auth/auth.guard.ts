@@ -19,9 +19,10 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const header = request.headers;
+    const header = request.headers['authorization'];
+    if (!header) throw new UnauthorizedException();
 
-    const token = BigInt(header['authorization']);
+    const token = BigInt(header);
 
     const resolved = new Date(
       Math.floor(Number(token / BigInt(10000000))) - 30000000000,
@@ -32,7 +33,9 @@ export class AuthGuard implements CanActivate {
 
     if (resolved < new Date()) throw new UnauthorizedException();
 
-    request.body.user = await this.prisma.findUserById(Number(token % BigInt(10000000)));
+    request.body.user = await this.prisma.findUserById(
+      Number(token % BigInt(10000000)),
+    );
 
     return true;
   }

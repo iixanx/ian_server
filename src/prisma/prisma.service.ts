@@ -84,13 +84,11 @@ export class PrismaService
     });
   }
 
-  async findOtpWithPage(userId: number, page: number) {
+  async findOtpWithPage(userId: number) {
     return await this.otp.findMany({
       where: {
         userId,
       },
-      skip: page * 10,
-      take: 10,
     });
   }
 

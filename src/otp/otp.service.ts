@@ -79,12 +79,14 @@ export class OtpService implements IOtpService {
     );
   }
 
-  async getAccountList(page: string, request: GetAccountListRequestDto) {
+  async getAccountList(request: GetAccountListRequestDto) {
     this.logger.log('try to getAccountList');
-    const numPage = Number(page ?? '0');
     const { user } = request;
 
-    return await this.prisma.findOtpWithPage(user.id, numPage);
+    return {
+      user,
+      accountList: await this.prisma.findOtpWithPage(user.id),
+    };
   }
 
   async getOtpInform(otpId: string, request: GetOtpInformRequestDto) {
